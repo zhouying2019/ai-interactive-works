@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentFlow HUD — Tactile Human-Agent Interrupt, Steer & Takeover Lab</title>
+  <style>
+    :root {
+      --bg: #070b14;
+      --panel: #0f172a;
+      --panel2: #162036;
+      --border: #263554;
+      --cyan: #22d3ee;
+      --amber: #fbbf24;
+      --purple: #a78bfa;
+      --emerald: #34d399;
+      --rose: #fb7185;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "PingFang SC", sans-serif;
+      background: radial-gradient(circle at 18% 0%, #111f3d 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .shell { max-width: 1320px; margin: 0 auto; }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 20px; background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--border); border-radius: 14px; backdrop-filter: blur(12px);
+      margin-bottom: 18px; flex-wrap: wrap; gap: 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .pulse-orb {
+      width: 14px; height: 14px; border-radius: 50%; background: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan); transition: all 0.3s;
+    }
+    .pulse-orb.paused { background: var(--amber); box-shadow: 0 0 18px var(--amber); }
+    .pulse-orb.human { background: var(--purple); box-shadow: 0 0 18px var(--purple); }
+    .state-chip {
+      font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      background: rgba(34, 211, 238, 0.14); color: var(--cyan); border: 1px solid rgba(34,211,238,0.4);
+    }
+    .state-chip.paused { background: rgba(251,191,36,0.15); color: var(--amber); border-color: rgba(251,191,36,0.5); }
+    .state-chip.human { background: rgba(167,139,250,0.18); color: var(--purple); border-color: rgba(167,139,250,0.5); }
+
+    .btn {
+      padding: 8px 15px; border-radius: 9px; border: 1px solid var(--border);
+      background: var(--panel2); color: var(--text); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: transform 0.12s, border-color 0.2s, background 0.2s;
+      display: inline-flex; align-items: center; gap: 6px; text-decoration: none;
+    }
+    .btn:hover { border-color: var(--cyan); transform: translateY(-1px); }
+    .btn:active { transform: scale(0.97); }
+    .btn-cyan { background: linear-gradient(135deg, #0891b2, #2563eb); border: none; color: #fff; }
+    .btn-amber { background: rgba(251,191,36,0.16); border-color: var(--amber); color: var(--amber); }
+    .btn-purple { background: rgba(167,139,250,0.18); border-color: var(--purple); color: var(--purple); }
+
+    .layout { display: grid; grid-template-columns: 330px 1fr 360px; gap: 16px; }
+    @media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } }
+    .panel {
+      background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .panel-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.7px; color: var(--muted); display: flex; justify-content: space-between;
+    }
+    .scenario-btn {
+      width: 100%; text-align: left; padding: 11px 12px; border-radius: 10px;
+      background: var(--panel2); border: 1px solid var(--border); color: var(--text); cursor: pointer;
+      margin-bottom: 8px; transition: all 0.15s;
+    }
+    .scenario-btn.active { border-color: var(--cyan); background: rgba(34,211,238,0.08); }
+    .dial-box { background: var(--panel2); padding: 12px; border-radius: 10px; border: 1px solid #1e293b; }
+    .dial-row { margin-bottom: 10px; }
+    .dial-row label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    input[type="range"] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+
+    /* Center HUD Stream */
+    .hud-stage {
+      position: relative; border: 2px solid rgba(34,211,238,0.35);
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .hud-stage.paused { border-color: var(--amber); box-shadow: 0 0 28px rgba(251,191,36,0.12); }
+    .hud-stage.human { border-color: var(--purple); box-shadow: 0 0 28px rgba(167,139,250,0.16); }
+
+    .step-list { display: flex; flex-direction: column; gap: 10px; min-height: 300px; }
+    .step-node {
+      background: var(--panel2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; transition: all 0.25s; position: relative;
+    }
+    .step-node.running { border-color: var(--cyan); box-shadow: inset 3px 0 0 var(--cyan); }
+    .step-node.interrupted { border-color: var(--amber); background: rgba(251,191,36,0.07); }
+    .step-node.steered { border-color: var(--emerald); box-shadow: inset 3px 0 0 var(--emerald); }
+    .step-meta { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-bottom: 4px; }
+    .progress-track { height: 4px; background: #0b1120; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--cyan), #6366f1); width: 0%; transition: width 0.18s linear; }
+
+    /* Interrupt Steering Bar */
+    .steer-drawer {
+      background: rgba(251, 191, 36, 0.09); border: 1px dashed var(--amber);
+      border-radius: 10px; padding: 12px; display: none; flex-direction: column; gap: 8px;
+    }
+    .steer-drawer.visible { display: flex; animation: popIn 0.18s ease-out; }
+    @keyframes popIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .steer-chip {
+      font-size: 11.5px; padding: 4px 10px; border-radius: 999px;
+      background: #1e293b; border: 1px solid #475569; color: #e2e8f0; cursor: pointer;
+    }
+    .steer-chip:hover { border-color: var(--amber); color: var(--amber); }
+
+    /* Live Artifact Canvas (Direct Takeover Surface) */
+    .canvas-card {
+      background: #0b1324; border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 10px;
+    }
+    .canvas-card.editable { border-color: var(--purple); background: rgba(167,139,250,0.06); }
+    .artifact-editor {
+      width: 100%; flex: 1; min-height: 220px; background: transparent; border: none;
+      color: var(--text); font-family: inherit; font-size: 13.5px; line-height: 1.65; resize: none; outline: none;
+    }
+    .kbd {
+      background: #1e293b; border: 1px solid #475569; border-radius: 4px;
+      padding: 1px 6px; font-size: 11px; font-family: monospace; color: #cbd5e1;
+    }
+    .notes-modal {
+      margin-top: 18px; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+    }
+    @media (max-width: 900px) { .notes-modal { grid-template-columns: 1fr; } }
+    .notes-modal h4 { color: var(--cyan); font-size: 14px; margin-bottom: 6px; }
+    .notes-modal p { color: var(--muted); font-size: 13px; line-height: 1.55; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand">
+        <div id="orb" class="pulse-orb"></div>
+        <div>
+          <div style="font-weight:800;font-size:17px;">AgentFlow HUD <span style="font-weight:400;font-size:13px;color:var(--muted);">— Tactile Human-Agent Co-Pilot Experiment</span></div>
+          <div style="font-size:12px;color:var(--muted);">Interactive HCI Prototype: Intent Dials · Mid-Flight Brake (<span class="kbd">Space</span>) · Seamless Direct Takeover</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span id="stateChip" class="state-chip">AGENT EXECUTING</span>
+        <button class="btn" id="soundBtn" onclick="toggleSound()">🔊 Tactile Sound: ON</button>
+        <a class="btn" href="./margin-radar.html">More Work: SellerMarginRadar SaaS →</a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- LEFT: INTENT EXPRESSION & VECTOR DIALS -->
+      <div class="panel">
+        <div class="panel-title"><span>1. Intent & Autonomy Vector</span><span>INPUT</span></div>
+        <div id="scenarioList"></div>
+
+        <div class="dial-box">
+          <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#e2e8f0;">Game-Like Tactile Intent Shaping (Non-Chat)</div>
+          <div class="dial-row">
+            <label><span>Reasoning Depth</span><span id="valDepth">Deep Synthesis</span></label>
+            <input type="range" min="1" max="3" value="3" oninput="onDialChange('depth', this.value)" />
+          </div>
+          <div class="dial-row">
+            <label><span>Autonomy Leash</span><span id="valLeash">Ask on High Risk</span></label>
+            <input type="range" min="1" max="3" value="2" oninput="onDialChange('leash', this.value)" />
+          </div>
+          <div class="dial-row" style="margin-bottom:0;">
+            <label><span>Output Density</span><span id="valTone">Executive Brief</span></label>
+            <input type="range" min="1" max="3" value="2" oninput="onDialChange('tone', this.value)" />
+          </div>
+        </div>
+
+        <button class="btn btn-cyan" style="width:100%;justify-content:center;padding:11px;" onclick="restartMission()">
+          ▶ Launch / Replay Agent Mission
+        </button>
+      </div>
+
+      <!-- CENTER: LIVE EXECUTION STREAM + MID-FLIGHT INTERRUPT -->
+      <div id="hudStage" class="panel hud-stage">
+        <div class="panel-title">
+          <span>2. Live Execution Stream (Kinetic Feedback)</span>
+          <span id="stepCounter">Step 1 / 4</span>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-amber" id="interruptBtn" onclick="toggleInterrupt()">
+            ⏸ Brake & Supplement (<span class="kbd">Space</span>)
+          </button>
+          <button class="btn btn-purple" id="takeoverBtn" onclick="toggleTakeover()">
+            🖐️ Grab Direct Control
+          </button>
+        </div>
+
+        <div id="steerDrawer" class="steer-drawer">
+          <div style="font-size:12.5px;font-weight:700;color:var(--amber);">
+            ⚡ Agent Braked at Current Node — Inject Mid-Flight Supplement (Zero Restart Loss):
+          </div>
+          <div class="chip-row">
+            <button class="steer-chip" onclick="applySteer('Focus strictly on GCC Sovereign Wealth AI Allocation (2026)')">+ Focus on GCC Sovereign Funds</button>
+            <button class="steer-chip" onclick="applySteer('Strip verbose background; output 3 boardroom action bullets')">+ Compress to 3 Boardroom Bullets</button>
+            <button class="steer-chip" onclick="applySteer('Flag regulatory & data-residency risks in red')">+ Highlight Residency Risks</button>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input id="customSteerInput" type="text" placeholder="Or type custom mid-flight constraint and press Enter..." style="flex:1;background:#0b1120;border:1px solid #475569;color:#fff;padding:7px 10px;border-radius:7px;font-size:12.5px;" onkeydown="if(event.key==='Enter')applyCustomSteer()" />
+            <button class="btn btn-cyan" onclick="applyCustomSteer()">Inject & Resume</button>
+          </div>
+        </div>
+
+        <div id="stepList" class="step-list"></div>
+      </div>
+
+      <!-- RIGHT: SHARED ARTIFACT SURFACE (DIRECT TAKEOVER) -->
+      <div class="panel">
+        <div class="panel-title">
+          <span>3. Shared Co-Creation Surface</span>
+          <span id="ownerTag" style="color:var(--cyan);">Agent Writing...</span>
+        </div>
+        <div id="canvasCard" class="canvas-card">
+          <div style="font-size:11.5px;color:var(--muted);border-bottom:1px solid #1e293b;padding-bottom:6px;display:flex;justify-content:space-between;">
+            <span id="docTitle">LIVE BRIEF ARTIFACT</span>
+            <span id="editHint">Click "Grab Direct Control" to edit inline</span>
+          </div>
+          <textarea id="artifactArea" class="artifact-editor" readonly></textarea>
+        </div>
+        <button id="handbackBtn" class="btn btn-cyan" style="display:none;justify-content:center;" onclick="handBackToAgent()">
+          ✨ Lock Human Edits & Hand Back to Agent
+        </button>
+      </div>
+    </div>
+
+    <!-- DESIGN DECISIONS RATIONALE FOR REVIEWERS -->
+    <section class="notes-modal">
+      <div>
+        <h4>Design Decision 01 · Beyond Chat Boxes</h4>
+        <p>Chat forces high cognitive friction for continuous parameters. Tactile Intent Dials let users shape reasoning depth, risk leash, and density with game-HUD immediacy before and during execution.</p>
+      </div>
+      <div>
+        <h4>Design Decision 02 · Lossless Mid-Flight Brake</h4>
+        <p>Traditional agents force a binary "Stop & Lose Progress" vs "Wait Helplessly". Pressing <span class="kbd">Space</span> applies kinetic deceleration at the active step boundary so users inject constraints and fork cleanly.</p>
+      </div>
+      <div>
+        <h4>Design Decision 03 · Shared Ownership & Audio Cues</h4>
+        <p>Synthesized Web Audio micro-feedback (intent lock chord, brake down-sweep, takeover chime) pairs with color-coded borders (Cyan = Agent, Amber = Braked, Purple = Human Control) so agency state is unmistakable in peripheral vision.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const SCENARIOS = [
+      {
+        id: "sovereign",
+        title: "GCC Executive AI Strategy Brief",
+        desc: "Synthesize cross-border AI infrastructure & talent benchmarks",
+        steps: [
+          { name: "Ingest Regional Sovereign Filings", detail: "Scanning UAE, KSA & Singapore 2026 compute allocations", snippet: "## 1. Capital Allocation Shift\n• Sovereign AI infrastructure commitments shifted 42% toward vertical enterprise deployment.\n" },
+          { name: "Cross-Compare Talent & Residency Rules", detail: "Mapping sovereign cloud compliance & local R&D mandates", snippet: "\n## 2. Regulatory & Talent Bottlenecks\n• Strict sovereign data residency requires hybrid on-prem inference clusters.\n" },
+          { name: "Synthesize Executive Action Matrix", detail: "Drafting 90-day leadership study & partnership roadmap", snippet: "\n## 3. Recommended 90-Day Executive Roadmap\n• Launch joint AI Product Lab fellowship pairing domain executives with agentic engineers.\n" },
+          { name: "Stress-Test Counterarguments", detail: "Validating ROI assumptions against compute depreciation", snippet: "\n## 4. Risk Mitigation\n• Cap upfront GPU capex via multi-model routing & implicit context caching." }
+        ]
+      },
+      {
+        id: "triage",
+        title: "Real-Time Margin Anomaly Triage",
+        desc: "Diagnose sudden ROAS drop across 5 global storefronts",
+        steps: [
+          { name: "Pull Live Channel Telemetry", detail: "Comparing Shopify, TikTok Shop & Amazon fee deltas", snippet: "## 1. Anomaly Detected\n• TikTok Shop net margin compressed by 6.4% on SKU-204 due to stacked promo + referral fee.\n" },
+          { name: "Isolate Root Cost Driver", detail: "Separating carrier surcharge vs ad CPA drift", snippet: "\n## 2. Root Cause Attribution\n• Dimensional weight tier crossed 16oz threshold (+$2.15/order fulfillment leak).\n" },
+          { name: "Simulate Repricing Scenarios", detail: "Computing break-even ROAS across price elasticities", snippet: "\n## 3. Price Guard Simulation\n• Adjusting bundle threshold to $44.00 restores 31.8% net margin without volume cliff.\n" },
+          { name: "Stage Storefront Patch", detail: "Preparing reversible price sync batch", snippet: "\n## 4. Ready for Execution\n• Awaiting human sign-off on 3 repriced multi-channel SKUs." }
+        ]
+      }
+    ];
+
+    let soundEnabled = true;
+    let audioCtx = null;
+    let activeScenario = SCENARIOS[0];
+    let mode = "running"; // running | paused | human
+    let curStep = 0;
+    let curProgress = 0;
+    let timer = null;
+    let steeredNotes = [];
+
+    function playTone(freqStart, freqEnd, dur = 0.12, type = "sine") {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + dur);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + dur);
+      } catch (_) {}
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById("soundBtn").textContent = soundEnabled ? "🔊 Tactile Sound: ON" : "🔇 Tactile Sound: OFF";
+      if (soundEnabled) playTone(520, 780, 0.1);
+    }
+
+    function renderScenarios() {
+      document.getElementById("scenarioList").innerHTML = SCENARIOS.map(s => `
+        <button class="scenario-btn ${s.id === activeScenario.id ? 'active' : ''}" onclick="selectScenario('${s.id}')">
+          <div style="font-weight:700;font-size:13.5px;">${s.title}</div>
+          <div style="font-size:11.5px;color:var(--muted);margin-top:2px;">${s.desc}</div>
+        </button>
+      `).join("");
+    }
+
+    function selectScenario(id) {
+      activeScenario = SCENARIOS.find(x => x.id === id) || SCENARIOS[0];
+      playTone(440, 660, 0.1);
+      renderScenarios();
+      restartMission();
+    }
+
+    function onDialChange(kind, val) {
+      playTone(360 + val * 90, 400 + val * 90, 0.06, "triangle");
+      const maps = {
+        depth: { 1: "Fast Scan", 2: "Balanced", 3: "Deep Synthesis" },
+        leash: { 1: "Full Auto", 2: "Ask on High Risk", 3: "Strict Step Gate" },
+        tone: { 1: "Raw Telemetry", 2: "Executive Brief", 3: "Boardroom Narrative" }
+      };
+      const targetId = kind === "depth" ? "valDepth" : kind === "leash" ? "valLeash" : "valTone";
+      document.getElementById(targetId).textContent = maps[kind][val];
+    }
+
+    function setVisualMode(newMode) {
+      mode = newMode;
+      const orb = document.getElementById("orb");
+      const chip = document.getElementById("stateChip");
+      const stage = document.getElementById("hudStage");
+      const drawer = document.getElementById("steerDrawer");
+      const area = document.getElementById("artifactArea");
+      const card = document.getElementById("canvasCard");
+      const handback = document.getElementById("handbackBtn");
+      const owner = document.getElementById("ownerTag");
+      const intBtn = document.getElementById("interruptBtn");
+
+      orb.className = "pulse-orb " + (mode === "running" ? "" : mode);
+      chip.className = "state-chip " + (mode === "running" ? "" : mode);
+      stage.className = "panel hud-stage " + (mode === "running" ? "" : mode);
+
+      if (mode === "running") {
+        chip.textContent = "AGENT EXECUTING";
+        drawer.classList.remove("visible");
+        area.readOnly = true;
+        card.classList.remove("editable");
+        handback.style.display = "none";
+        owner.textContent = "Agent Streaming...";
+        owner.style.color = "var(--cyan)";
+        intBtn.innerHTML = '⏸ Brake & Supplement (<span class="kbd">Space</span>)';
+      } else if (mode === "paused") {
+        chip.textContent = "BRAKED · AWAITING STEER";
+        drawer.classList.add("visible");
+        area.readOnly = true;
+        card.classList.remove("editable");
+        handback.style.display = "none";
+        owner.textContent = "Paused at Boundary";
+        owner.style.color = "var(--amber)";
+        intBtn.innerHTML = '▶ Resume Execution (<span class="kbd">Space</span>)';
+      } else if (mode === "human") {
+        chip.textContent = "HUMAN DIRECT TAKEOVER";
+        drawer.classList.remove("visible");
+        area.readOnly = false;
+        area.focus();
+        card.classList.add("editable");
+        handback.style.display = "inline-flex";
+        owner.textContent = "Human Editing Directly";
+        owner.style.color = "var(--purple)";
+      }
+      renderSteps();
+    }
+
+    function renderSteps() {
+      const total = activeScenario.steps.length;
+      document.getElementById("stepCounter").textContent = `Step ${Math.min(curStep + 1, total)} / ${total}`;
+      document.getElementById("stepList").innerHTML = activeScenario.steps.map((st, idx) => {
+        let cls = "";
+        let statusLabel = "Queued";
+        let pct = 0;
+        if (idx < curStep) { cls = "steered"; statusLabel = "Committed ✓"; pct = 100; }
+        else if (idx === curStep) {
+          pct = curProgress;
+          if (mode === "paused") { cls = "interrupted"; statusLabel = "Braked — Ready for Supplement"; }
+          else if (mode === "human") { cls = "interrupted"; statusLabel = "Yielded to Human Control"; }
+          else { cls = "running"; statusLabel = `Executing (${pct}%)`; }
+        }
+        const steerBadge = steeredNotes[idx] ? `<div style="margin-top:6px;font-size:11.5px;color:var(--emerald);">↳ Injected Constraint: "${steeredNotes[idx]}"</div>` : "";
+        return `<div class="step-node ${cls}">
+          <div class="step-meta"><span>0${idx + 1} · ${st.name}</span><span>${statusLabel}</span></div>
+          <div style="font-size:12.5px;color:#cbd5e1;">${st.detail}</div>
+          ${steerBadge}
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        </div>`;
+      }).join("");
+    }
+
+    function tick() {
+      if (mode !== "running") return;
+      if (curStep >= activeScenario.steps.length) {
+        clearInterval(timer);
+        document.getElementById("stateChip").textContent = "MISSION COMPLETE";
+        document.getElementById("ownerTag").textContent = "Ready for Review / Takeover";
+        playTone(523, 784, 0.18);
+        return;
+      }
+      curProgress += 10;
+      if (curProgress >= 100) {
+        const area = document.getElementById("artifactArea");
+        const extra = steeredNotes[curStep] ? `  [Steered: ${steeredNotes[curStep]}]\n` : "";
+        area.value += activeScenario.steps[curStep].snippet + extra;
+        area.scrollTop = area.scrollHeight;
+        playTone(480, 620, 0.07);
+        curStep += 1;
+        curProgress = 0;
+      }
+      renderSteps();
+    }
+
+    function restartMission() {
+      clearInterval(timer);
+      curStep = 0;
+      curProgress = 0;
+      steeredNotes = [];
+      document.getElementById("artifactArea").value = "";
+      setVisualMode("running");
+      playTone(380, 640, 0.14);
+      timer = setInterval(tick, 320);
+    }
+
+    function toggleInterrupt() {
+      if (curStep >= activeScenario.steps.length) return restartMission();
+      if (mode === "running") {
+        playTone(540, 260, 0.15, "sawtooth");
+        setVisualMode("paused");
+      } else {
+        playTone(320, 620, 0.12);
+        setVisualMode("running");
+      }
+    }
+
+    function applySteer(text) {
+      steeredNotes[curStep] = text;
+      document.getElementById("artifactArea").value += `\n> ⚡ [Human Mid-Flight Steer Applied]: ${text}\n`;
+      playTone(440, 880, 0.16);
+      setVisualMode("running");
+    }
+
+    function applyCustomSteer() {
+      const inp = document.getElementById("customSteerInput");
+      if (!inp.value.trim()) return;
+      const v = inp.value.trim();
+      inp.value = "";
+      applySteer(v);
+    }
+
+    function toggleTakeover() {
+      playTone(420, 720, 0.16, "triangle");
+      setVisualMode("human");
+    }
+
+    function handBackToAgent() {
+      document.getElementById("artifactArea").value += "\n[✓ Human inline edits locked — Agent adapting downstream nodes]\n";
+      playTone(500, 820, 0.16);
+      setVisualMode("running");
+      if (curStep >= activeScenario.steps.length) {
+        document.getElementById("stateChip").textContent = "CO-EDITED & COMPLETE";
+      }
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        toggleInterrupt();
+      }
+    });
+
+    renderScenarios();
+    restartMission();
+  </script>
+</body>
+</html>

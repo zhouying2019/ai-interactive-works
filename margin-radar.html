@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SellerMarginRadar — 2026 Multi-Channel Profit & Fee Calculator (Shopify, Etsy, TikTok Shop, Amazon, eBay)</title>
+  <meta name="description" content="Instantly compare real 2026 seller fees, referral commissions, ad ROAS break-even, and net profit margins across Shopify, Etsy, TikTok Shop, Amazon FBA, and eBay in one dashboard." />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "SellerMarginRadar",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web, Chrome Extension",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  }
+  </script>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --panel: #111827;
+      --panel2: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #34d399;
+      --red: #f87171;
+      --amber: #fbbf24;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px; }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 26px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; }
+    .logo-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+    .cta-btn {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1);
+      color: #fff; text-decoration: none; padding: 9px 18px; border-radius: 8px;
+      font-weight: 600; font-size: 13.5px; border: none; cursor: pointer;
+    }
+    .hero { margin-bottom: 24px; }
+    .hero h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+    .hero p { color: var(--muted); max-width: 780px; font-size: 15px; }
+    .grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px;
+    }
+    .field { margin-bottom: 14px; }
+    .field label { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+    .field input {
+      width: 100%; background: var(--panel2); border: 1px solid var(--border);
+      color: #fff; padding: 9px 12px; border-radius: 8px; font-size: 15px; font-weight: 600;
+    }
+    .field input:focus { outline: none; border-color: var(--accent); }
+    .kpi-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .kpi { background: var(--panel2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+    .kpi .k-label { font-size: 12px; color: var(--muted); }
+    .kpi .k-val { font-size: 22px; font-weight: 800; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid #1e293b; text-align: left; }
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pill { padding: 3px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .pill-good { background: rgba(52,211,153,0.15); color: var(--green); }
+    .pill-warn { background: rgba(251,191,36,0.15); color: var(--amber); }
+    .pill-bad { background: rgba(248,113,113,0.15); color: var(--red); }
+    .ad-slot {
+      margin: 22px 0; padding: 14px; border: 1px dashed #334155; border-radius: 10px;
+      text-align: center; color: #64748b; font-size: 12px;
+    }
+    .seo-section { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .seo-section h2 { font-size: 18px; margin-bottom: 8px; color: var(--accent); }
+    .seo-section p { font-size: 13.5px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo"><span class="logo-dot"></span> SellerMarginRadar <span style="font-size:12px;color:#38bdf8;border:1px solid #0369a1;padding:2px 8px;border-radius:99px;">2026 Fee Engine</span></div>
+      <div style="display:flex;gap:10px;">
+        <button class="cta-btn" style="background:#1e293b;border:1px solid #475569;" onclick="exportCsv()">Export CSV Report</button>
+        <a class="cta-btn" href="#pro-extension">Get Chrome Extension ($9/mo Pro)</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1>Multi-Channel E-Commerce Profit & Break-Even ROAS Calculator</h1>
+      <p>Stop losing margin to hidden marketplace fees. Compare real-time net payouts, platform referral cuts, and minimum break-even price across 5 major channels side by side.</p>
+    </section>
+
+    <div class="grid">
+      <div class="card">
+        <h3 style="margin-bottom:14px;font-size:16px;">SKU Unit Economics Input</h3>
+        <div class="field">
+          <label><span>Selling Price (USD)</span><span id="lblPrice">$39.99</span></label>
+          <input type="number" id="inPrice" step="0.01" value="39.99" oninput="recalc()" />
+        </div>
+        <div class="field">
+          <label><span>Shipping Charged to Buyer ($)</span><span>Optional</span></label>
+          <input type="number" id="inShipCharge" step="0.01" value="0.00" oninput="recalc()" />
+        </div>
+        <div class="field">
+          <label><span>Product COGS / Landed Cost ($)</span><span>Unit Cost</span></label>
+          <input type="number" id="inCogs" step="0.01" value="11.50" oninput="recalc()" />
+        </div>
+        <div class="field">
+          <label><span>Actual Shipping & Packaging Cost ($)</span><span>Fulfillment</span></label>
+          <input type="number" id="inShipCost" step="0.01" value="5.20" oninput="recalc()" />
+        </div>
+        <div class="field">
+          <label><span>Customer Acquisition / Ad Spend per Order ($)</span><span>CPA</span></label>
+          <input type="number" id="inAdCost" step="0.01" value="6.00" oninput="recalc()" />
+        </div>
+        <div class="field">
+          <label><span>Target Minimum Profit Margin (%)</span><span>Alert Threshold</span></label>
+          <input type="number" id="inTargetMargin" step="1" value="25" oninput="recalc()" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="kpi-strip">
+          <div class="kpi">
+            <div class="k-label">Highest Margin Channel</div>
+            <div class="k-val" id="kpiBestChannel" style="color:var(--green);">Shopify</div>
+          </div>
+          <div class="kpi">
+            <div class="k-label">Channel Fee Spread</div>
+            <div class="k-val" id="kpiSpread" style="color:var(--accent);">$4.84 / unit</div>
+          </div>
+          <div class="kpi">
+            <div class="k-label">Monthly Profit @ 300 Orders</div>
+            <div class="k-val" id="kpiMonthly">$4,749</div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Marketplace</th>
+              <th>2026 Fee Formula</th>
+              <th>Platform Fees</th>
+              <th>Net Profit</th>
+              <th>Net Margin</th>
+              <th>Break-Even ROAS</th>
+              <th>Health</th>
+            </tr>
+          </thead>
+          <tbody id="channelTbody"></tbody>
+        </table>
+
+        <!-- Ready for Google AdSense Auto/Display Unit -->
+        <div class="ad-slot">
+          Sponsored Tool Slot · Ready for Google AdSense (`data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"`) — E-Commerce Finance High-ECPM Placement
+        </div>
+      </div>
+    </div>
+
+    <section id="pro-extension" class="seo-section">
+      <div class="card">
+        <h2>Why Multi-Channel Sellers Bleed Margin in 2026</h2>
+        <p>When supplier landed costs or carrier surcharges jump by $1.50, updating prices across Shopify, Etsy, TikTok Shop, Amazon, and eBay manually leads to underpriced SKUs. SellerMarginRadar calculates exact payment processing + referral fees on gross order revenue (including buyer-paid shipping).</p>
+      </div>
+      <div class="card">
+        <h2>Chrome Extension: Live Dashboard Margin Guard</h2>
+        <p>Install the SellerMarginRadar MV3 Chrome Extension to inject a live floating profit badge directly inside Shopify Admin, Etsy Shop Manager, and TikTok Seller Center. Free for 10 SKU checks/day, or unlock unlimited multi-store margin alerts for $9/month.</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const CHANNELS = [
+      {
+        name: "Shopify (Basic)",
+        formula: "2.9% + $0.30 Stripe",
+        calcFee: (rev) => rev * 0.029 + 0.30
+      },
+      {
+        name: "TikTok Shop US",
+        formula: "6.0% Referral + $0.30",
+        calcFee: (rev) => rev * 0.06 + 0.30
+      },
+      {
+        name: "Etsy Marketplace",
+        formula: "6.5% Tx + 3% + $0.45 Listing/Pay",
+        calcFee: (rev) => rev * 0.095 + 0.45
+      },
+      {
+        name: "eBay Standard",
+        formula: "13.25% Final Value + $0.40",
+        calcFee: (rev) => rev * 0.1325 + 0.40
+      },
+      {
+        name: "Amazon Referral (15%)",
+        formula: "15.0% Referral (min $0.30)",
+        calcFee: (rev) => Math.max(0.30, rev * 0.15)
+      }
+    ];
+
+    let latestRows = [];
+
+    function recalc() {
+      const price = Math.max(0, parseFloat(document.getElementById("inPrice").value) || 0);
+      const shipCharge = Math.max(0, parseFloat(document.getElementById("inShipCharge").value) || 0);
+      const cogs = Math.max(0, parseFloat(document.getElementById("inCogs").value) || 0);
+      const shipCost = Math.max(0, parseFloat(document.getElementById("inShipCost").value) || 0);
+      const adCost = Math.max(0, parseFloat(document.getElementById("inAdCost").value) || 0);
+      const targetMargin = parseFloat(document.getElementById("inTargetMargin").value) || 20;
+
+      document.getElementById("lblPrice").textContent = "$" + price.toFixed(2);
+      const grossRev = price + shipCharge;
+
+      latestRows = CHANNELS.map(ch => {
+        const fee = ch.calcFee(grossRev);
+        const preAdProfit = grossRev - cogs - shipCost - fee;
+        const netProfit = preAdProfit - adCost;
+        const marginPct = grossRev > 0 ? (netProfit / grossRev) * 100 : 0;
+        const breakEvenRoas = preAdProfit > 0 ? (grossRev / preAdProfit) : Infinity;
+        return { ...ch, grossRev, fee, netProfit, marginPct, breakEvenRoas };
+      });
+
+      const sorted = [...latestRows].sort((a, b) => b.netProfit - a.netProfit);
+      const best = sorted[0];
+      const worst = sorted[sorted.length - 1];
+      document.getElementById("kpiBestChannel").textContent = `${best.name.split(" ")[0]} ($${best.netProfit.toFixed(2)})`;
+      document.getElementById("kpiSpread").textContent = `$${(best.netProfit - worst.netProfit).toFixed(2)} / unit`;
+      document.getElementById("kpiMonthly").textContent = `$${Math.round(best.netProfit * 300).toLocaleString()}`;
+
+      document.getElementById("channelTbody").innerHTML = latestRows.map(r => {
+        let pillCls = "pill-good", statusTxt = "Healthy";
+        if (r.netProfit <= 0) { pillCls = "pill-bad"; statusTxt = "Loss Alert"; }
+        else if (r.marginPct < targetMargin) { pillCls = "pill-warn"; statusTxt = "Below Target"; }
+
+        return `<tr>
+          <td><strong>${r.name}</strong></td>
+          <td style="color:#94a3b8;font-size:12.5px;">${r.formula}</td>
+          <td>$${r.fee.toFixed(2)}</td>
+          <td style="font-weight:700;color:${r.netProfit >= 0 ? '#34d399' : '#f87171'};">$${r.netProfit.toFixed(2)}</td>
+          <td><strong>${r.marginPct.toFixed(1)}%</strong></td>
+          <td>${isFinite(r.breakEvenRoas) ? r.breakEvenRoas.toFixed(2) + "x" : "N/A"}</td>
+          <td><span class="pill ${pillCls}">${statusTxt}</span></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function exportCsv() {
+      const headers = ["Marketplace,GrossRevenue,PlatformFees,NetProfit,NetMarginPct,BreakEvenROAS"];
+      latestRows.forEach(r => {
+        headers.push(`"${r.name}",${r.grossRev.toFixed(2)},${r.fee.toFixed(2)},${r.netProfit.toFixed(2)},${r.marginPct.toFixed(1)},${isFinite(r.breakEvenRoas)?r.breakEvenRoas.toFixed(2):0}`);
+      });
+      const blob = new Blob([headers.join("\n")], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "seller-margin-radar-2026.csv";
+      a.click();
+    }
+
+    recalc();
+  </script>
+</body>
+</html>
