@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>APEX COURT · 现代体育赛事与比分门户 UI 设计样板 | Zhouying Li</title>
+  <style>
+    :root, [data-theme="dark"] {
+      --bg: #080b11;
+      --bg-elev: #101521;
+      --card: #141b29;
+      --card-hover: #1a2335;
+      --line: rgba(255, 255, 255, 0.08);
+      --line-strong: rgba(255, 255, 255, 0.15);
+      --ink: #f8fafc;
+      --muted: #94a3b8;
+      --subtle: #64748b;
+      --accent: #ccff00;
+      --accent-ink: #080b11;
+      --live: #ff3b30;
+      --live-soft: rgba(255, 59, 48, 0.14);
+      --blue: #38bdf8;
+      --shadow: 0 22px 48px -16px rgba(0, 0, 0, 0.65);
+    }
+    [data-theme="light"] {
+      --bg: #f3f5f8;
+      --bg-elev: #ffffff;
+      --card: #ffffff;
+      --card-hover: #f8fafc;
+      --line: #e2e8f0;
+      --line-strong: #cbd5e1;
+      --ink: #0f172a;
+      --muted: #475569;
+      --subtle: #64748b;
+      --accent: #0f172a;
+      --accent-ink: #ffffff;
+      --live: #dc2626;
+      --live-soft: rgba(220, 38, 38, 0.1);
+      --blue: #0284c7;
+      --shadow: 0 18px 36px -16px rgba(15, 23, 42, 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background 0.22s ease, color 0.22s ease;
+    }
+    .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+    button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+
+    /* Designer Spec Top Ribbon */
+    .spec-ribbon {
+      background: #0f172a;
+      color: #e2e8f0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 8px 20px;
+      font-size: 12.5px;
+    }
+    .spec-ribbon-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .theme-switch {
+      display: inline-flex;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 4px;
+    }
+    .theme-btn {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      transition: all 0.18s ease;
+    }
+    .theme-btn.active {
+      background: #ccff00;
+      color: #080b11;
+    }
+
+    /* Header & Live Score Ticker */
+    .site-header {
+      background: var(--bg-elev);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(14px);
+    }
+    .nav-bar {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 19px;
+      letter-spacing: -0.03em;
+    }
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #ccff00, #22c55e);
+      display: grid;
+      place-items: center;
+      color: #080b11;
+      font-weight: 900;
+      font-size: 14px;
+    }
+    .sport-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--bg);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+    }
+    .sport-tab {
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--muted);
+      transition: all 0.16s ease;
+    }
+    .sport-tab.active {
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+    .header-cta {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line-strong);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* Horizontal Match Strip */
+    .ticker-wrap {
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+    }
+    .ticker-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 10px 20px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(210px, 1fr));
+      gap: 10px;
+      overflow-x: auto;
+    }
+    .mini-score {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      transition: border-color 0.16s ease, transform 0.16s ease;
+    }
+    .mini-score:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-1px);
+    }
+    .mini-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--live);
+      background: var(--live-soft);
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 11px;
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--live);
+      animation: pulse 1.4s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.82); }
+    }
+    .mini-team {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13.5px;
+      font-weight: 700;
+      padding: 2px 0;
+    }
+
+    /* Main Grid */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 24px 20px 56px;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.65fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* Hero Broadcast Match Card */
+    .hero-match {
+      background:
+        radial-gradient(circle at 86% 14%, rgba(56, 189, 248, 0.16), transparent 44%),
+        radial-gradient(circle at 12% 88%, rgba(204, 255, 0, 0.11), transparent 42%),
+        var(--card);
+      border: 1px solid var(--line-strong);
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: var(--shadow);
+    }
+    .hero-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .league-tag {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .matchup-stage {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+      padding: 12px 0 22px;
+    }
+    .club {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .club.away { align-items: flex-end; text-align: right; }
+    .club-badge {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 17px;
+      letter-spacing: -0.03em;
+      border: 1px solid var(--line-strong);
+    }
+    .club-name { font-size: 20px; font-weight: 900; letter-spacing: -0.02em; }
+    .club-record { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+
+    .score-center {
+      text-align: center;
+      padding: 0 12px;
+    }
+    .big-score {
+      font-size: clamp(34px, 5vw, 52px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .score-sep { color: var(--subtle); font-weight: 400; }
+    .clock-chip {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    /* Period Splits + Momentum Bar */
+    .splits-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      font-size: 12.5px;
+    }
+    .splits-table th, .splits-table td {
+      padding: 9px 10px;
+      text-align: center;
+    }
+    .splits-table th:first-child, .splits-table td:first-child { text-align: left; font-weight: 700; }
+    .splits-table th { color: var(--subtle); font-weight: 700; font-size: 11.5px; }
+
+    .momentum-box { margin-top: 18px; }
+    .mom-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .mom-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--bg);
+      overflow: hidden;
+      display: flex;
+      gap: 3px;
+    }
+    .mom-left {
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+    .mom-right {
+      flex: 1;
+      background: rgba(148, 163, 184, 0.28);
+      border-radius: 999px;
+    }
+
+    /* Editorial News / Highlights Section */
+    .sec-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 26px 0 12px;
+    }
+    .sec-head h2 {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+    .sec-link { font-size: 12.5px; color: var(--muted); font-weight: 700; }
+
+    .news-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .news-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      transition: border-color 0.16s ease;
+    }
+    .news-card:hover { border-color: var(--line-strong); }
+    .news-kicker {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--blue);
+    }
+    .news-card h3 { font-size: 15.5px; font-weight: 800; line-height: 1.38; margin-top: 4px; }
+    .news-foot { font-size: 12px; color: var(--subtle); display: flex; justify-content: space-between; }
+
+    /* Right Sidebar: Standings + Upcoming Schedule */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .panel-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 15.5px;
+      font-weight: 900;
+    }
+    .standings {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .standings th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--subtle);
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .standings th.r, .standings td.r { text-align: right; }
+    .standings td {
+      padding: 10px 4px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 600;
+    }
+    .standings tr:last-child td { border-bottom: none; }
+    .rank-num {
+      display: inline-block;
+      width: 20px;
+      color: var(--subtle);
+      font-weight: 800;
+    }
+    .rank-top { color: var(--blue); }
+    .streak-win {
+      color: #22c55e;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    .sched-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--line);
+      gap: 10px;
+    }
+    .sched-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .sched-time {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--blue);
+    }
+    .sched-teams { font-size: 13.5px; font-weight: 700; }
+    .remind-btn {
+      padding: 5px 11px;
+      border-radius: 7px;
+      border: 1px solid var(--line-strong);
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.15s ease;
+    }
+    .remind-btn.saved {
+      background: var(--accent);
+      color: var(--accent-ink);
+      border-color: transparent;
+    }
+
+    /* Design System Spec Footer */
+    .design-notes {
+      margin-top: 28px;
+      padding: 18px 22px;
+      border-radius: 14px;
+      border: 1px dashed var(--line-strong);
+      background: var(--bg-elev);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .design-notes strong { color: var(--ink); display: block; margin-bottom: 4px; font-size: 13px; }
+
+    @media (max-width: 920px) {
+      .main-grid, .news-grid, .design-notes { grid-template-columns: 1fr; }
+      .ticker-inner { grid-template-columns: repeat(4, 220px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="spec-ribbon">
+    <div class="spec-ribbon-inner">
+      <span><strong>体育门户与实时赛事 UI 设计样板（双主题可切换）</strong> · 视觉规范 + 等宽比分防抖排版 + 响应式栅格</span>
+      <div class="theme-switch">
+        <button class="theme-btn active" id="btn-dark" type="button" onclick="setTheme('dark')">曜石赛事暗黑风</button>
+        <button class="theme-btn" id="btn-light" type="button" onclick="setTheme('light')">纯净体育媒体浅色风</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="nav-bar">
+      <div class="brand">
+        <div class="brand-mark">AC</div>
+        <span>APEX COURT 体育视界</span>
+      </div>
+
+      <div class="sport-tabs">
+        <button class="sport-tab active" type="button" onclick="switchSport('nba', this)">🏀 篮球联赛</button>
+        <button class="sport-tab" type="button" onclick="switchSport('epl', this)">⚽ 欧洲足球</button>
+        <button class="sport-tab" type="button" onclick="switchSport('atp', this)">🎾 网球巡回赛</button>
+      </div>
+
+      <button class="header-cta" type="button">赛程日历 · 球队数据库</button>
+    </div>
+
+    <div class="ticker-wrap">
+      <div class="ticker-inner tnum" id="ticker-list"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="main-grid">
+      <!-- Left Column -->
+      <div>
+        <section class="hero-match" id="hero-card">
+          <div class="hero-meta">
+            <span class="league-tag" id="hero-league">NBA 常规赛 · 焦点夜战 · 大通中心球馆</span>
+            <span class="live-pill"><span class="live-dot"></span><span id="hero-status">LIVE · Q4 03:42</span></span>
+          </div>
+
+          <div class="matchup-stage">
+            <div class="club home">
+              <div class="club-badge" id="home-badge" style="background:rgba(56,189,248,0.14);color:#38bdf8;">GSW</div>
+              <div class="club-name" id="home-name">金州勇士</div>
+              <div class="club-record" id="home-rec">14 胜 4 负 · 主场 9-1</div>
+            </div>
+
+            <div class="score-center tnum">
+              <div class="big-score">
+                <span id="home-score">114</span>
+                <span class="score-sep">:</span>
+                <span id="away-score">109</span>
+              </div>
+              <span class="clock-chip" id="hero-subclock">末节决胜 · 球权：勇士</span>
+            </div>
+
+            <div class="club away">
+              <div class="club-badge" id="away-badge" style="background:rgba(245,158,11,0.15);color:#f59e0b;">DEN</div>
+              <div class="club-name" id="away-name">丹佛掘金</div>
+              <div class="club-record" id="away-rec">13 胜 5 负 · 客场 6-3</div>
+            </div>
+          </div>
+
+          <table class="splits-table tnum" id="splits-table"></table>
+
+          <div class="momentum-box">
+            <div class="mom-labels tnum">
+              <span id="prob-left">主队实时胜率预估 68%</span>
+              <span id="prob-right">客队 32%</span>
+            </div>
+            <div class="mom-track">
+              <div class="mom-left" id="prob-bar" style="width:68%;"></div>
+              <div class="mom-right"></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="sec-head">
+          <h2>深度战报与战术解析</h2>
+          <span class="sec-link">查看全部专栏 →</span>
+        </div>
+
+        <div class="news-grid" id="news-grid"></div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <aside>
+        <div class="panel">
+          <div class="panel-title">
+            <span id="standings-title">分区实时积分榜</span>
+            <span style="font-size:11.5px;color:var(--subtle);font-weight:700;">2026 赛季</span>
+          </div>
+          <table class="standings tnum" id="standings-body"></table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <span>今日焦点赛程预告</span>
+            <span style="font-size:11.5px;color:var(--subtle);font-weight:700;">北京时间</span>
+          </div>
+          <div id="schedule-list"></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="design-notes">
+      <div>
+        <strong>01 · 体育数字防跳动规范 (Tabular-Nums)</strong>
+        全站比分、倒计时、积分列强制启用等宽数字特性，实时刷新比分时布局零抖动、视觉对齐干净利落。
+      </div>
+      <div>
+        <strong>02 · 双色语义与高信噪比层级</strong>
+        克制使用高饱和度警示色（仅用于 LIVE 直播态与主交互焦点），大面积留白/深色底衬托球队徽标与核心赛果。
+      </div>
+      <div>
+        <strong>03 · 设计稿 + 前端代码无缝交付</strong>
+        采用标准 8pt 间距栅格与 CSS 变量语义令牌，既可交付整洁 UI 视觉稿，也可直接配合开发输出响应式 HTML/CSS 组件。
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const DATA = {
+      nba: {
+        league: "NBA 常规赛 · 西部焦点战 · 大通中心",
+        status: "LIVE · Q4 03:42",
+        subclock: "末节决胜 · 命中率 51.2% vs 48.4%",
+        home: { code: "GSW", name: "金州勇士", rec: "14 胜 4 负 · 主场 9-1", score: 114, color: "#38bdf8" },
+        away: { code: "DEN", name: "丹佛掘金", rec: "13 胜 5 负 · 客场 6-3", score: 109, color: "#f59e0b" },
+        prob: 68,
+        splitsHead: ["球队", "Q1", "Q2", "Q3", "Q4", "总分"],
+        splitsRows: [
+          ["金州勇士", 31, 27, 30, 26, 114],
+          ["丹佛掘金", 28, 30, 26, 25, 109]
+        ],
+        ticker: [
+          { tag: "LIVE · Q3", t1: ["BOS 凯尔特人", 88], t2: ["NYK 尼克斯", 82], live: true },
+          { tag: "已结束", t1: ["OKC 雷霆", 121], t2: ["DAL 独行侠", 115], live: false },
+          { tag: "已结束", t1: ["LAL 湖人", 108], t2: ["PHX 太阳", 104], live: false },
+          { tag: "今日 11:30", t1: ["MIN 森林狼", "-"], t2: ["SAC 国王", "-"], live: false }
+        ],
+        standingsTitle: "西部联盟实时排名",
+        standingsCols: ["球队", "胜-负", "胜率", "近况"],
+        standings: [
+          ["OKC 雷霆", "15-3", ".833", "4连胜"],
+          ["GSW 勇士", "14-4", ".778", "3连胜"],
+          ["DEN 掘金", "13-5", ".722", "2连胜"],
+          ["DAL 独行侠", "12-7", ".632", "1连负"],
+          ["LAL 湖人", "11-7", ".611", "2连胜"]
+        ],
+        news: [
+          { k: "战术拆解", t: "外线手递手掩护提速：拆解勇士本季第三节场均净胜 8.4 分的空间密码", m: "深度图文 · 6 分钟阅读" },
+          { k: "球员追踪", t: "约基奇连续四场三双领跑效率榜，掘金衔接段轮换阵容攻防净效率回升", m: "数据洞察 · 4 分钟阅读" }
+        ],
+        schedule: [
+          { time: "明日 08:30", match: "骑士 vs 凯尔特人 · 榜首大战" },
+          { time: "明日 10:00", match: "火箭 vs 雷霆 · 青年军对决" },
+          { time: "明日 11:00", match: "快船 vs 森林狼 · 西部卡位战" }
+        ]
+      },
+      epl: {
+        league: "英超第 13 轮 · 安菲尔德球场",
+        status: "LIVE · 74'",
+        subclock: "控球率 56% - 44% · 射正 7 - 4",
+        home: { code: "LIV", name: "利物浦", rec: "10 胜 1 平 1 负 · 榜首", score: 2, color: "#ef4444" },
+        away: { code: "MCI", name: "曼城", rec: "8 胜 2 平 2 负 · 卫冕冠军", score: 1, color: "#38bdf8" },
+        prob: 74,
+        splitsHead: ["球队", "上半场", "下半场", "预期进球(xG)", "角球", "比分"],
+        splitsRows: [
+          ["利物浦", 1, 1, "2.18", 7, 2],
+          ["曼城", 0, 1, "1.34", 5, 1]
+        ],
+        ticker: [
+          { tag: "LIVE · 62'", t1: ["ARS 阿森纳", 3], t2: ["WHU 西汉姆联", 1], live: true },
+          { tag: "完场", t1: ["CHE 切尔西", 2], t2: ["AVL 维拉", 0], live: false },
+          { tag: "完场", t1: ["BHA 布莱顿", 1], t2: ["NEW 纽卡斯尔", 1], live: false },
+          { tag: "23:00 开球", t1: ["MUN 曼联", "-"], t2: ["EVE 埃弗顿", "-"], live: false }
+        ],
+        standingsTitle: "英超实时积分榜",
+        standingsCols: ["俱乐部", "赛", "净胜球", "积分"],
+        standings: [
+          ["利物浦", "12", "+18", "31"],
+          ["阿森纳", "13", "+14", "25"],
+          ["切尔西", "13", "+12", "25"],
+          ["曼城", "12", "+8", "23"],
+          ["布莱顿", "13", "+5", "23"]
+        ],
+        news: [
+          { k: "赛场热区", t: "右路肋部高压逼抢奏效：利物浦前 30 分钟完成 9 次前场反抢直接转化进球", m: "战术板 · 5 分钟阅读" },
+          { k: "欧战前瞻", t: "冬窗赛程密集期将至，英超争冠集团阵容厚度与伤病恢复周期对比", m: "专题报道 · 7 分钟阅读" }
+        ],
+        schedule: [
+          { time: "今晚 23:00", match: "热刺 vs 富勒姆 · 伦敦德比" },
+          { time: "明晨 04:00", match: "皇家马德里 vs 赫塔费 · 西甲" },
+          { time: "周三 04:00", match: "欧冠联赛阶段第 5 轮焦点战" }
+        ]
+      },
+      atp: {
+        league: "ATP 年终大师表演赛 · 硬地室内中央球场",
+        status: "LIVE · 第 3 盘",
+        subclock: "决胜盘抢七前关键局 · 一发得分率 81%",
+        home: { code: "SIN", name: "辛纳 J. Sinner", rec: "世界排名 #1 · 硬地 50-3", score: 2, color: "#22c55e" },
+        away: { code: "ALC", name: "阿尔卡拉斯 C. Alcaraz", rec: "世界排名 #2 · 大满贯得主", score: 1, color: "#f59e0b" },
+        prob: 58,
+        splitsHead: ["选手", "第 1 盘", "第 2 盘", "第 3 盘", "ACE 球", "大比分"],
+        splitsRows: [
+          ["辛纳 ●", "6", "4", "5", 11, 2],
+          ["阿尔卡拉斯", "4", "6", "4", 9, 1]
+        ],
+        ticker: [
+          { tag: "已结束", t1: ["兹维列夫", 2], t2: ["弗里茨", 0], live: false },
+          { tag: "已结束", t1: ["郑钦文", 2], t2: ["莱巴金娜", 1], live: false },
+          { tag: "明日 19:30", t1: ["梅德韦杰夫", "-"], t2: ["鲁德", "-"], live: false },
+          { tag: "明日 21:00", t1: ["萨巴伦卡", "-"], t2: ["高芙", "-"], live: false }
+        ],
+        standingsTitle: "ATP 世界单打积分榜",
+        standingsCols: ["选手", "协会", "参赛", "积分"],
+        standings: [
+          ["J. 辛纳", "ITA", "18", "11,830"],
+          ["A. 兹维列夫", "GER", "21", "7,915"],
+          ["C. 阿尔卡拉斯", "ESP", "19", "7,010"],
+          ["T. 弗里茨", "USA", "22", "5,100"],
+          ["D. 梅德韦杰夫", "ATP", "20", "5,030"]
+        ],
+        news: [
+          { k: "技术统计", t: "反拍直线变线平均球速达 138km/h：新生代双雄硬地底线攻防节奏再升级", m: "鹰眼数据 · 4 分钟阅读" },
+          { k: "新赛季日历", t: "2027 澳网热身赛签表与联合杯参赛名单出炉，中国军团多线出击", m: "赛历速递 · 3 分钟阅读" }
+        ],
+        schedule: [
+          { time: "今晚 21:00", match: "男双决赛 · 中央球场压轴战" },
+          { time: "周六 19:30", match: "新赛季联合杯小组赛揭幕战" },
+          { time: "周日 15:00", match: "布里斯班国际赛正赛首轮" }
+        ]
+      }
+    };
+
+    function setTheme(t) {
+      document.documentElement.setAttribute("data-theme", t);
+      document.getElementById("btn-dark").classList.toggle("active", t === "dark");
+      document.getElementById("btn-light").classList.toggle("active", t === "light");
+    }
+
+    function switchSport(key, btn) {
+      document.querySelectorAll(".sport-tab").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      const d = DATA[key];
+
+      document.getElementById("hero-league").textContent = d.league;
+      document.getElementById("hero-status").textContent = d.status;
+      document.getElementById("hero-subclock").textContent = d.subclock;
+
+      document.getElementById("home-badge").textContent = d.home.code;
+      document.getElementById("home-name").textContent = d.home.name;
+      document.getElementById("home-rec").textContent = d.home.rec;
+      document.getElementById("home-score").textContent = d.home.score;
+
+      document.getElementById("away-badge").textContent = d.away.code;
+      document.getElementById("away-name").textContent = d.away.name;
+      document.getElementById("away-rec").textContent = d.away.rec;
+      document.getElementById("away-score").textContent = d.away.score;
+
+      document.getElementById("prob-left").textContent = `主队/首方实时胜率预估 ${d.prob}%`;
+      document.getElementById("prob-right").textContent = `对手 ${100 - d.prob}%`;
+      document.getElementById("prob-bar").style.width = d.prob + "%";
+
+      // Splits
+      const st = document.getElementById("splits-table");
+      st.innerHTML = `<thead><tr>${d.splitsHead.map(h => `<th>${h}</th>`).join("")}</tr></thead>` +
+        `<tbody>${d.splitsRows.map(r => `<tr>${r.map((c, i) => `<td style="${i === r.length - 1 ? 'font-weight:900;' : ''}">${c}</td>`).join("")}</tr>`).join("")}</tbody>`;
+
+      // Ticker
+      document.getElementById("ticker-list").innerHTML = d.ticker.map(m => `
+        <div class="mini-score">
+          <div class="mini-top">
+            <span>${m.live ? `<span class="live-pill"><span class="live-dot"></span>${m.tag}</span>` : m.tag}</span>
+            <span>详情 ›</span>
+          </div>
+          <div class="mini-team"><span>${m.t1[0]}</span><strong>${m.t1[1]}</strong></div>
+          <div class="mini-team"><span>${m.t2[0]}</span><strong>${m.t2[1]}</strong></div>
+        </div>
+      `).join("");
+
+      // Standings
+      document.getElementById("standings-title").textContent = d.standingsTitle;
+      document.getElementById("standings-body").innerHTML =
+        `<thead><tr>${d.standingsCols.map((c, i) => `<th class="${i > 0 ? 'r' : ''}">${c}</th>`).join("")}</tr></thead>` +
+        `<tbody>${d.standings.map((row, idx) => `
+          <tr>
+            <td><span class="rank-num ${idx < 3 ? 'rank-top' : ''}">${idx + 1}</span>${row[0]}</td>
+            <td class="r">${row[1]}</td>
+            <td class="r">${row[2]}</td>
+            <td class="r streak-win">${row[3]}</td>
+          </tr>
+        `).join("")}</tbody>`;
+
+      // News
+      document.getElementById("news-grid").innerHTML = d.news.map(n => `
+        <article class="news-card">
+          <div>
+            <div class="news-kicker">${n.k}</div>
+            <h3>${n.t}</h3>
+          </div>
+          <div class="news-foot"><span>${n.m}</span><span>阅读全文 →</span></div>
+        </article>
+      `).join("");
+
+      // Schedule
+      document.getElementById("schedule-list").innerHTML = d.schedule.map(s => `
+        <div class="sched-item">
+          <div>
+            <div class="sched-time">${s.time}</div>
+            <div class="sched-teams">${s.match}</div>
+          </div>
+          <button class="remind-btn" type="button" onclick="this.classList.toggle('saved');this.textContent=this.classList.contains('saved')?'✓ 已预约':'开赛提醒'">开赛提醒</button>
+        </div>
+      `).join("");
+    }
+
+    switchSport("nba", document.querySelector(".sport-tab.active"));
+  </script>
+</body>
+</html>
